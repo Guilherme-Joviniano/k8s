@@ -8,7 +8,6 @@ spec:
   selector:
     matchLabels:
       app: goserver
-  replicas: 2
   template:
     metadata:
       labels:
@@ -16,7 +15,53 @@ spec:
     spec:
       containers:
         - name: goserver
-          image: "joviniano/hello-go:v5" 
-          env: 
-            - name: NAME
-              value: "Joviniano"    
+          image: "joviniano/hello-go:v10.1" 
+          resources:
+            requests: 
+              cpu: 30m
+              memory: 20Mi  
+            limits:
+              cpu: 30m
+              memory: 25Mi
+          startupProbe:
+            httpGet: 
+             path: /health
+             port: 8080
+            periodSeconds: 3
+            failureThreshold: 10
+            successThreshold: 1
+          
+          readinessProbe:
+            httpGet: 
+             path: /health
+             port: 8080
+            periodSeconds: 3
+            failureThreshold: 1
+            timeoutSeconds: 5
+            successThreshold: 1
+          
+          livenessProbe:
+            httpGet: 
+             path: /health
+             port: 8080
+            periodSeconds: 3
+            failureThreshold: 1
+            timeoutSeconds: 10
+            successThreshold: 1
+          envFrom:
+            - secretRef:
+                name: goserver-secret
+            - configMapRef:
+               name: goserver-env
+          volumeMounts: 
+            - mountPath: "/go/hello-world-go/data"
+              name: config
+              readOnly: true
+      volumes:
+        - name: config
+          configMap: 
+            name: configmap-members               
+            items: 
+              - key: members
+                path: "members.txt"
+            
