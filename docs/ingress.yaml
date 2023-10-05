@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-host 
+  annotations: 
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt"
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  type: NodePort 
+  port: 80
+  rules:
+  - host: "go.com.br"
+    http:
+      paths: 
+      - pathType: Prefix
+        path: "/" 
+        backend:   
+          service: 
+            name: goserver-service
+            port: 80
+  tls: 
+  - hosts: 
+    - "ingress.go.com.br"
+    secretName: certicate-tls
